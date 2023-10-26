@@ -13,7 +13,7 @@ check_url() {
 # Set flags for different types of downloads
 download_weekly=false     # Default false
 download_monthly=true     # Default true
-download_seasonal=true   # Default false
+download_seasonal=false   # Default false
 
 # Define the base URL
 base_url="http://access-s.clide.cloud/files/global/"
