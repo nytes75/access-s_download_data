@@ -44,6 +44,3 @@ bash access-s_data.sh
 
 8. Once the script completes, you'll find the downloaded data in the specified main folder, organized by data type and variable.
 
-You can now use the downloaded netCDF data for your analysis and research.
-
-Enjoy using this script to download ACCESS-S netCDF data efficiently!
