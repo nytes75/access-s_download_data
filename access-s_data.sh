@@ -11,9 +11,9 @@ check_url() {
 }
 
 # Set flags for different types of downloads
-download_weekly=false     # Default false
+download_weekly=true     # Default false
 download_monthly=true     # Default true
-download_seasonal=false   # Default false
+download_seasonal=true   # Default false
 
 # Define the base URL
 base_url="http://access-s.clide.cloud/files/global/"
@@ -21,7 +21,7 @@ base_url="http://access-s.clide.cloud/files/global/"
 # Main folder where data will be stored
 main_folder="ACCESS-S/data"
 
-# Define the variables
+# The variables to download
 variables="anom median terciles"
 
 # Loop through the variables
