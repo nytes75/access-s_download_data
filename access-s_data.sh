@@ -64,10 +64,10 @@ for var in $variables; do
 
     if [ "$download_monthly" = true ]; then
         dir="monthly"
-        # Construct the file pattern for monthly
+        clean_archive "$dir"
         file_pattern="rain.forecast.$var.monthly.nc"
         full_url="${base_url}${dir}/data/${file_pattern}"
-        
+   
         # Check if the URL is responsive
         if check_url "$full_url"; then
             # Create a subfolder for monthly data
@@ -84,6 +84,7 @@ for var in $variables; do
     if [ "$download_seasonal" = true ]; then
         dir="seasonal"
         # Construct the file pattern for seasonal
+        clean_archive "$dir"
         file_pattern="rain.forecast.$var.seasonal.nc"
         full_url="${base_url}${dir}/data/${file_pattern}"
         
