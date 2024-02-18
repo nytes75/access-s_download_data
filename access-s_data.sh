@@ -42,7 +42,7 @@ function clean_archive {
 for var in $variables; do
     if [ "$download_weekly" = true ]; then
         dir="weekly"
-        clean_archive "$dir"
+        #clean_archive "$dir"
         # Construct the file pattern for weekly
         #find ${main_folder} -name '*.nc' -mtime +40 -type f -delete 2>/dev/null
         #echo "Cleaned $dir folder.."
@@ -64,7 +64,7 @@ for var in $variables; do
 
     if [ "$download_monthly" = true ]; then
         dir="monthly"
-        clean_archive "$dir"
+        #clean_archive "$dir"
         file_pattern="rain.forecast.$var.monthly.nc"
         full_url="${base_url}${dir}/data/${file_pattern}"
    
@@ -84,7 +84,7 @@ for var in $variables; do
     if [ "$download_seasonal" = true ]; then
         dir="seasonal"
         # Construct the file pattern for seasonal
-        clean_archive "$dir"
+        #clean_archive "$dir"
         file_pattern="rain.forecast.$var.seasonal.nc"
         full_url="${base_url}${dir}/data/${file_pattern}"
         
