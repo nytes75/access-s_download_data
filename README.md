@@ -36,11 +36,7 @@ The script checks the responsiveness of the provided URLs before initiating down
 bash access-s_data.sh
 ```
 
-5. The script will start downloading the specified data files based on your settings. It will create subfolders for weekly, monthly, and seasonal data within the main folder.
+The script will start downloading the specified data files based on your settings. It will create subfolders for weekly, monthly, and seasonal data within the main folder.Will also check if the URLs are responsive before initiating downloads. If a URL is unresponsive, it will be reported in the terminal.
 
-6. The script will check if the URLs are responsive before initiating downloads. If a URL is unresponsive, it will be reported in the terminal.
-
-7. The script includes a random sleep period between downloads to prevent overwhelming the server.
-
-8. Once the script completes, you'll find the downloaded data in the specified main folder, organized by data type and variable.
+The script includes a random sleep period between downloads to prevent overwhelming the server.Once the script completes, you'll find the downloaded data in the specified main folder, organized by data type and variable.
 
