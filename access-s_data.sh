@@ -26,7 +26,6 @@ main_folder="ACCESS-S/data"
 # Variables to download ||anom||median||terciles||
 variables="anom median terciles"
 
-
 function clean_archive {
 	#	#Remove maps older than 1 months (based on file creation)
   #Smoother Approach
