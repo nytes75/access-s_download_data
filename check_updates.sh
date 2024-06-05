@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#                                                    ___  
-#===github:@nytes75=================================| _ |
-#     _    ____ ____ _____ ____ ____       ____     | _ |
-#    / \  / ___/ ___| ____/ ___/ ___|     / ___|    |___|
+#                                                     
+#===github:@nytes75=================================
+#     _    ____ ____ _____ ____ ____       ____    
+#    / \  / ___/ ___| ____/ ___/ ___|     / ___|    
 #   / _ \| |  | |   |  _| \___ \___ \ ____\___ \ 
 #  / ___ \ |__| |___| |___ ___) |__) |_____|__) |
 # /_/   \_\____\____|_____|____/____/     |____/            
@@ -13,62 +13,28 @@
 #  \___/|_|   |____/_/   \_\_| |_____|____/ 
 
 # Checking new updates added to the ACCESS-S cloud files
+# RIGHT NOW WE TESTING ON |CREWS-PNG| PRODUCTS
 
-# local[1]: change this dir 
-export DL_DIR=./index/              # Folder to store [index].html file
+# local[1]: 
+weekly=true 
+fortnightly=true
+monthly=false
+seasonal=false
 
-# request[2]: These will be passed in as Args
-download_access=true                # Default: true
-download_access_rain_terciles=true  # Default: true
-download_access_mjo=true            # Default: true
+# storage[1]
+export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews/"
+export path_crews="./index/updated_pages/png_crews/"
 
 # local[2]: Testing 
-testing_mode=false                  # Default: false 
+testing_mode=false
 
-if [ "$testing_mode" = true ]; then
-  echo "Testing Phase local[2]"
-else
-  # request[1]: URL 
-  # The URL and Args will come from Download Scripts
-  url_wkf="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews/weekly/forecast/"
-sat_webpage_content="$(curl -s "$url_wkf")"
-
-fi
-
-check_storage_folder()
-{
-    # Check if folder exists
-  if [ ! -d "$folder" ]; then
-    echo "Folder '$folder' not found. Creating..."
-    mkdir -p "$folder"  # Create folder if it doesn't exist
-  else
-      echo "Folder '$folder' already exists."
-  fi
-
-    # Check if file exists
-  if [ ! -f "$folder/$file" ]; then
-      echo "File '$file' not found in '$folder'. Creating..."
-      touch "$folder/$file"  # Create file if it doesn't exist
-  else
-      echo "File '$file' already exists in '$folder'."
-  fi
-}
+# A regular expression pattern to match the date and time within <td> tags
+date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
 
 filter_html() {
-  # Commenting Line Below For reference
+  # Commenting Line Below For Reference
   filter_dates=($(echo "$1" | grep -Po "$date_pattern")) 
   echo ${filter_dates[@]}
-}
-
-function validate_url()
-{
-	if [[ `wget -S --spider $1 2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
-		echo "Connection: Successful";
-    echo $1
-    format_and_display $1	
-  else
-		echo "Connection: Failed";
-  fi 
 }
 
 get_names() {
@@ -118,25 +84,30 @@ format_and_display() {
     modified=0
     constant=0 
     # Check file and directory
-
+    # climate Products = [ 'saved', 'url', 'saved_name']
+    
     #==================[ ONE ]===========================
     #Follow Where these 3 variables going to be next: [1]
     
     filter_html_saved=($(filter_html "$1"))
-    filter_html_url=($(filter_html "$2"))
+    # request[2]
+    local html_url=$(curl -s "$2")
+    filter_html_url=($(filter_html "${html_url}"))
     formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
     formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
-    label_url=($(get_names "$2"))
+    label_url=($(get_names "${html_url}"))
+    #echo "${filter_html_url}" 
+    
+    #echo "${formatted_saved[@]}"
+    #echo "||"
+    #echo "${formatted_url[@]}"
 
     # Check if both arrays have the same length
     if [ ${#formatted_saved[@]} -ne ${#formatted_url[@]} ]; then
         echo "Arrays have different lengths, cannot display side by side."
         return
     fi
-    #echo "${formatted_url[@]}"
-    #echo "${formatted_dates[@]}"
-
-    # formatted_dates and formatted_url have an array length of 6 while labels have only 3
+        # formatted_dates and formatted_url have an array length of 6 while labels have only 3
     for ((i = 0; i < ${#formatted_saved[@]}; i++)); do
         local label="${label_url[$i/2]}"  # Due to arrays formatted_url & formatted_dates having 2X the size
         local date1="${formatted_saved[$i]}"
@@ -156,11 +127,12 @@ format_and_display() {
     done
 
     if [ $modified = 0 ]; then
-        echo "Files have yet to be modified online:"
+      echo  
+      echo "-> Files have yet to be modified online:"
     elif [ $modified/$constant = 1 ]; then
-        echo "All flies have been Modified"
+        echo "-> All flies have been Modified"
         sleep 0.3
-        echo "Do you wish to continue with update [Y/n]"
+        echo "> Do you wish to continue with update [Y/n]"
     else
         echo "we have $modified modified and $constant constant"
         sleep 1
@@ -172,11 +144,13 @@ format_and_display() {
               echo "Continuing..."
               sleep 0.8
               echo "Updating Product"
-              echo "----------------"
-              echo $2 > "$3" 
+              sleep 0.8
+              echo 
+              # Saving/Updating the last saved webpage to lastest
+              echo $html_url > "$3" 
               sleep 1
-              echo "-Files Updated-"
-
+              echo "-|| Files Updated ||-"
+              echo
               # Add your code here to continue
               break
               ;;
@@ -191,5 +165,42 @@ format_and_display() {
           esac
         done    
     fi
-}
-validate_url ${url_wkf} 
+} 
+
+#=========STARTING POINT==========
+#+++++++++++++++++++++++++++++++++
+
+if [ "$testing_mode" = true ]; then
+  echo "Testing Phase local[2]"
+
+else
+  # +++========================+++
+  # ------PNG CREWS PRODUCTS------
+  # Still Tesing the Scripts
+
+   for type in "weekly" "fortnightly" "monthly" "seasonal"; do
+    var_name="$type"
+    if [ "${!var_name}" = true ]; then
+      url="${url_crews}/${type}/forecast/"
+      saved_path="${path_crews}/${type}/png_crews_access_s-outlooks_png_crews_${type}_forecast.html"
+      echo "Processing $type..."
+      sleep 1
+
+      # storage[2]
+      crews_saved_content="$(cat -s $saved_path)"
+       # array[1]
+      # Climate Products = ['saved', 'url', 'url_name']
+      crews_content=("$crews_saved_content" "$url" "$saved_path")
+      
+      # Check for internet Connections
+      # request[1]
+      if curl -s --head "$url" | grep "200 OK" > /dev/null; then
+        echo "Connection: Successful"
+        format_and_display "${crews_content[@]}"
+      else
+        echo "Connection: Failed"
+       fi 
+    fi
+  done   
+    
+fi
