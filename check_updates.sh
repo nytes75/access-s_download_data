@@ -23,7 +23,7 @@ seasonal=false
 
 # storage[1]
 export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews/"
-export path_crews="./index/updated_pages/png_crews/"
+export path_crews="./ACCESS-S/index/updated_pages/png_crews/"
 
 # local[2]: Testing 
 testing_mode=false
