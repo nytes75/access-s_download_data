@@ -18,8 +18,8 @@
 # local[1]: 
 weekly=true 
 fortnightly=true
-monthly=false
-seasonal=false
+monthly=true
+seasonal=true
 
 # storage[1]
 export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
