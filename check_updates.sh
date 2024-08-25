@@ -16,14 +16,21 @@
 # RIGHT NOW WE TESTING ON |CREWS-PNG| PRODUCTS
 
 # local[1]: 
+multiday=true
 weekly=true 
 fortnightly=true
 monthly=true
-seasonal=true
+seasonal=true 
+
+sp_monthly=true
+
+
 
 # storage[1]
 export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
+export url_semdp="http://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
 export path_crews="./ACCESS-S/index/updated_pages/png_crews"
+export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
 
 # local[2]: Testing 
 testing_mode=false
