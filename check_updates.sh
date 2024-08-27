@@ -13,7 +13,6 @@
 #  \___/|_|   |____/_/   \_\_| |_____|____/ 
 
 # Checking new updates added to the ACCESS-S cloud files
-# RIGHT NOW WE TESTING ON |CREWS-PNG| PRODUCTS
 
 # local[1]: 
 multiday=true
@@ -21,10 +20,7 @@ weekly=true
 fortnightly=true
 monthly=true
 seasonal=true 
-
 sp_monthly=true
-
-
 
 # storage[1]
 export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
@@ -182,7 +178,6 @@ if [ "$testing_mode" = true ]; then
 
 else
   # +++========================+++
-  # ------PNG CREWS PRODUCTS------
   # Still Tesing the Scripts
 
    for type in "weekly" "fortnightly" "monthly" "seasonal"; do
