@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-#                                                     
-#===github:@nytes75=================================
+
+#===github:@nytes75==============================
 #     _    ____ ____ _____ ____ ____       ____    
 #    / \  / ___/ ___| ____/ ___/ ___|     / ___|    
 #   / _ \| |  | |   |  _| \___ \___ \ ____\___ \ 
@@ -11,7 +11,7 @@
 # | | | | |_) | | | |/ _ \ | | |  _| \___ \ 
 # | |_| |  __/| |_| / ___ \| | | |___ ___) |
 #  \___/|_|   |____/_/   \_\_| |_____|____/ 
-
+#
 # Checking new updates added to the ACCESS-S cloud files
 
 # local[1]: 
@@ -23,13 +23,17 @@ seasonal=true
 sp_monthly=true
 
 # storage[1]
+## url / links
 export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
 export url_semdp="http://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
 export path_crews="./ACCESS-S/index/updated_pages/png_crews"
 export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
 
+## Testing path
+export testing_crews="./ACCESS-S_testing/index/updated_pages/png_crews"
+
 # local[2]: Testing 
-testing_mode=false
+testing_mode=true
 
 # A regular expression pattern to match the date and time within <td> tags
 date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
@@ -94,11 +98,23 @@ format_and_display() {
     
     filter_html_saved=($(filter_html "$1"))
     # request[2]
-    local html_url=$(curl -s "$2")
-    filter_html_url=($(filter_html "${html_url}"))
-    formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
-    formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
-    label_url=($(get_names "${html_url}"))
+    if [ "$testing_mode" = true ]; then
+      # If Testing = true
+      local html_url=$(cat -s "$2") # cat the html
+      filter_html_url=($(filter_html "${html_url}"))
+      formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
+      formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
+      label_url=($(get_names "${html_url}"))
+    
+    else
+      # If Testing = FALSE
+      local html_url=$(curl -s "$2")
+      filter_html_url=($(filter_html "${html_url}"))
+      formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
+      formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
+      label_url=($(get_names "${html_url}"))
+    fi
+
     #echo "${filter_html_url}" 
     
     #echo "${formatted_saved[@]}"
@@ -108,6 +124,8 @@ format_and_display() {
     # Check if both arrays have the same length
     if [ ${#formatted_saved[@]} -ne ${#formatted_url[@]} ]; then
         echo "Arrays have different lengths, cannot display side by side."
+        echo ${#formatted_saved[@]}
+        echo ${#formatted_url[@]}
         return
     fi
         # formatted_dates and formatted_url have an array length of 6 while labels have only 3
@@ -175,6 +193,26 @@ format_and_display() {
 
 if [ "$testing_mode" = true ]; then
   echo "Testing Phase local[2]"
+  sleep 2
+  for type in "weekly" "fortnightly" "monthly" "seasonal"; do
+    var_name="$type"
+    if [ "${!var_name}" = true ]; then
+      url="${testing_crews}/${type}/png_crews_access_s-outlooks_png_crews_${type}_forecast.html"
+      saved_path="${path_crews}/${type}/png_crews_access_s-outlooks_png_crews_${type}_forecast.html"
+      echo "Processing $type..."
+      sleep 1
+      # storage[2]
+      crews_saved_content="$(cat -s $saved_path)"
+       # array[1]
+      # Climate Products = ['saved', 'url', 'url_name']
+      crews_content=("$crews_saved_content" "$url" "$saved_path")
+      
+      # Check for internet Connections
+      # request[1]
+      echo "Connection: Successful"
+      format_and_display "${crews_content[@]}" 
+    fi
+  done
 
 else
   # +++========================+++
@@ -201,8 +239,10 @@ else
         format_and_display "${crews_content[@]}"
       else
         echo "Connection: Failed"
+        echo "Check Internet Connection! : Connection may be slow"
        fi 
     fi
-  done   
-    
+  done      
+
 fi
+
