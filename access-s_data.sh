@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 testing_mode=true   #disable : [false] when ready
 
