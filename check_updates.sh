@@ -14,6 +14,13 @@
 #
 # Checking new updates added to the ACCESS-S cloud files
 
+# Adding flags
+# -t --testing 
+# -c --crews 
+# -s --semdp
+# -h --help 
+# -k --download
+
 # local[1]: 
 multiday=true
 weekly=true 
