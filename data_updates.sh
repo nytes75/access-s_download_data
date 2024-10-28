@@ -1,102 +1,252 @@
 #!/usr/bin/env bash
 
-testing_mode=true   #disable : [false] when ready
+#===github:@nytes75==============================
+#     _    ____ ____ _____ ____ ____       ____    
+#    / \  / ___/ ___| ____/ ___/ ___|     / ___|    
+#   / _ \| |  | |   |  _| \___ \___ \ ____\___ \ 
+#  / ___ \ |__| |___| |___ ___) |__) |_____|__) |
+# /_/   \_\____\____|_____|____/____/     |____/            
+#        __                    __                __
+#   ____/ /___ _      ______  / /___  ____ _____/ /
+#  / __  / __ \ | /| / / __ \/ / __ \/ __ `/ __  / 
+# / /_/ / /_/ / |/ |/ / / / / / /_/ / /_/ / /_/ /  
+# \__,_/\____/|__/|__/_/ /_/_/\____/\__,_/\__,_/
+# Checking new updates added to the ACCESS-S cloud files.
 
-# Function to check if a URL is responsive
-check_url() {
-    url_to_check=$1
-    if wget -q --spider "$url_to_check"; then
-        return 0 # URL is responsive
+# local[1]: 
+multiday=false
+weekly=false 
+fortnightly=false 
+monthly=true
+seasonal=false 
+sp_monthly=false 
+
+# local[1.5]
+terciles=true 
+median=false 
+anom=false 
+
+# storage[1]
+## url / links
+export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
+export url_semdp="http://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
+export path_crews="./ACCESS-S/index/updated_pages/png_crews"
+export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
+
+# Data download: 
+export url_data_prob="http://access-s.clide.cloud/files/global"
+export path_data_prob="./ACCESS-S/index/updated_pages/data/probability"
+# local[2]: Testing 
+testing_mode=false
+
+# A regular expression pattern to match the date and time within <td> tags
+date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
+
+filter_html() {
+  # Commenting Line Below For Reference
+  filter_dates=($(echo "$1" | grep -Po "$date_pattern")) 
+  echo ${filter_dates[@]}
+}
+
+get_names() {
+    local input_array=("$1") 
+    # Define a regular expression pattern to match additional information within other <td> tags
+    other_info_pattern="<td><a (.*?)>(.*?)</a></td>"
+    # saved_webpage1_content <- 
+    IFS=$'\n' read -r -d '' -a array <<< "$(echo "$input_array" | sed -E 's/[[:space:]]*~[[:space:]]*│[[:space:]]*//g' | grep -Po '<a[^>]*>\K(.*?)(?=<\/a>)')"
+
+    # Initialize an empty array to store filtered items
+    filtered_array=()
+    # Loop through the original array and filter items
+    for item in "${array[@]}"; do
+      # Use a case statement to check file extensions
+      case "$item" in
+        *.png|*.gif|*.jpg|*.nc)
+            # If the file has a valid extension, add it to the filtered array
+            filtered_array+=("$item")
+            ;;
+        *)
+            # Ignore items with other extensions
+            ;;
+      esac
+    done
+    echo "${filtered_array[@]}"
+ }
+
+# Stricly for the dates
+format_dates_and_store() {
+    local input_array=("$@")  # Store the passed array in a local variable
+    local output_array=()     # Initialize an empty array for storing formatted values
+    local i=0
+
+    while [ $i -lt ${#input_array[@]} ]; do
+        local date="${input_array[$i]}"
+        local time="${input_array[$i+1]}"
+        local formatted="${date} ${time}"
+        output_array+=("$formatted")
+        ((i+=2))
+    done
+
+    # Return
+    echo "${output_array[@]}"
+}
+
+format_and_display() {
+    modified=0
+    constant=0 
+    # Check file and directory
+    # climate Products = [ 'saved', 'url', 'saved_name']
+    
+    #==================[ ONE ]===========================
+    #Follow Where these 3 variables going to be next: [1]
+    
+    filter_html_saved=($(filter_html "$1"))
+    # request[2]
+    if [ "$testing_mode" = true ]; then
+      # If Testing = true
+      local html_url=$(cat -s "$2") # cat the html
+      filter_html_url=($(filter_html "${html_url}"))
+      formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
+      formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
+      label_url=($(get_names "${html_url}"))
+    
     else
-        return 1 # URL is not responsive
+      # If Testing = FALSE
+      local html_url=$(curl -s "$2")
+      filter_html_url=($(filter_html "${html_url}"))
+      formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
+      formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
+      label_url=($(get_names "${html_url}"))
     fi
-}
 
-# Set flags for different types of downloads
-download_weekly=false     # Default false
-download_monthly=true     # Default true
-download_seasonal=false   # Default false
+    #echo "${filter_html_url}" 
+    
+    #echo "${formatted_saved[@]}"
+    #echo "||"
+    #echo "${formatted_url[@]}"
 
-# Base URL
-base_url="http://access-s.clide.cloud/files/global/"
+    # Check if both arrays have the same length
+    if [ ${#formatted_saved[@]} -ne ${#formatted_url[@]} ]; then
+        echo "Arrays have different lengths, cannot display side by side."
+        echo ${#formatted_saved[@]}
+        echo ${#formatted_url[@]}
+        return
+    fi
+        # formatted_dates and formatted_url have an array length of 6 while labels have only 3
+    for ((i = 0; i < ${#formatted_saved[@]}; i++)); do
+        local label="${label_url[$i/2]}"  # Due to arrays formatted_url & formatted_dates having 2X the size
+        local date1="${formatted_saved[$i]}"
+        local time1="${formatted_saved[$i+1]}"
+        local date2="${formatted_url[$i]}"
+        local time2="${formatted_url[$i+1]}"
+    
+        if [ "$date1 $time1" != "$date2 $time2" ]; then
+            modified=$((modified+1))
+            echo "$date1 $time1 | $date2 $time2 |: Modified :| $label"
+        else 
+            constant=$((constant+1))
+            echo "$date1 $time1 | $date2 $time2 || Constant || $label"
+        fi
+        #echo "$date1 $time1 | $date2 $time2"
+        ((i++)) 
+    done
 
-# Main folder
-main_folder="ACCESS-S/data"
+    if [ $modified = 0 ]; then
+      echo  
+      echo "-> Files have yet to be modified online:"
+    elif [ $modified/$constant = 1 ]; then
+        echo "-> All flies have been Modified"
+        sleep 0.3
+        echo "> Do you wish to continue with update [Y/n]"
+    else
+        echo "we have $modified modified and $constant constant"
+        sleep 1
+        echo
+        while true; do
+          read -p "Do you wish to continue with the Update [Y/n]: " choice
+          case "$choice" in
+            [Yy])
+              echo "Continuing..."
+              sleep 0.8
+              echo "Updating Product"
+              sleep 0.8
+              echo 
+              # Saving/Updating the last saved webpage to lastest
+              echo $html_url > "$3" 
+              sleep 1
+              echo "-|| Files Updated ||-"
+              echo
+              # Add your code here to continue
+              break
+              ;;
+            [Nn])
+              echo "Exiting..."
+              # Add your code here to handle the exit or anything else you want to do
+              break
+              ;;
+            *)
+              echo "Invalid key. Please press Y if you wish to continue with the update or n to exit."
+              ;;
+          esac
+        done    
+    fi
+} 
 
-# Variables to download ||anom||median||terciles||
-variables="anom median terciles"
+#=========STARTING POINT==========
+#+++++++++++++++++++++++++++++++++
 
-function clean_archive {
-	#	#Remove maps older than 1 months (based on file creation)
-  #Smoother Approach
-	find ${main_folder}/$1/ -name '*.nc' -delete 2>/dev/null
-  # Brute Force Delete folder
-  #rm -rf ${main_folder}/
-  echo "$main_folder/$1/"
-	echo "Cleaned $1 folder"
-  sleep 0.6
-}
-
-# Download The NetCDF Data
-for var in $variables; do
-    if [ "$download_weekly" = true ]; then
-        dir="weekly"
-        #clean_archive "$dir"
-        # Construct the file pattern for weekly
-        #find ${main_folder} -name '*.nc' -mtime +40 -type f -delete 2>/dev/null
-        #echo "Cleaned $dir folder.."
+if [ "$testing_mode" = true ]; then
+  echo "Testing Phase local[2]"
+  sleep 2
+  for type in "weekly" "fortnightly" "monthly" "seasonal"; do
+    var_name="$type"
+    if [ "${!var_name}" = true ]; then
+      url="${testing_crews}/${type}/png_crews_access_s-outlooks_png_crews_${type}_forecast.html"
+      saved_path="${path_crews}/${type}/png_crews_access_s-outlooks_png_crews_${type}_forecast.html"
+      echo "Processing $type..."
+      sleep 1
+      # storage[2]
+      crews_saved_content="$(cat -s $saved_path)"
+       # array[1]
+      # Climate Products = ['saved', 'url', 'url_name']
+      crews_content=("$crews_saved_content" "$url" "$saved_path")
       
-        file_pattern="rain.forecast.$var.weekly.nc"
-        full_url="${base_url}${dir}/data/${file_pattern}"
-        
-        # Check if the URL is responsive
-        if check_url "$full_url"; then
-            # Sub-DIRECTORY 
-            mkdir -p "$main_folder/$dir"  # <--- $dir; lets change to run date or [date Modified]
-            # Download
-            wget -P "$main_folder/$dir" -nc -nd --no-check-certificate "$full_url"
-            sleep $((RANDOM % 3 + 1)) # <--- create a human like approach in downloading
-        else
-            echo "URL is not responsive: $full_url"
-        fi
+      # Check for internet Connections
+      # request[1]
+      echo "Connection: Successful"
+      format_and_display "${crews_content[@]}" 
     fi
+  done
 
-    if [ "$download_monthly" = true ]; then
-        dir="monthly"
-        #clean_archive "$dir"
-        file_pattern="rain.forecast.$var.monthly.nc"
-        full_url="${base_url}${dir}/data/${file_pattern}"
-   
-        # Check if the URL is responsive
-        if check_url "$full_url"; then
-            # Create a subfolder for monthly data
-            mkdir -p "$main_folder/$dir"
-            
-            # Download the file to the subfolder
-            wget -P "$main_folder/$dir" -nc -nd --no-check-certificate "$full_url"
-            sleep $((RANDOM % 3 + 1))
-        else
-            echo "URL is not responsive: $full_url"
-        fi
-    fi
+else
+  # +++========================+++
+  # Still Tesing the Scripts
 
-    if [ "$download_seasonal" = true ]; then
-        dir="seasonal"
-        # Construct the file pattern for seasonal
-        #clean_archive "$dir"
-        file_pattern="rain.forecast.$var.seasonal.nc"
-        full_url="${base_url}${dir}/data/${file_pattern}"
-        
-        # Check if the URL is responsive
-        if check_url "$full_url"; then
-            # Create a subfolder for seasonal data
-            mkdir -p "$main_folder/$dir"
-            
-            # Download the file to the subfolder
-            wget -P "$main_folder/$dir" -nc -nd --no-check-certificate "$full_url"
-            sleep $((RANDOM % 3 + 1))
-        else
-            echo "URL is not responsive: $full_url"
-        fi
+   for type in "weekly" "fortnightly" "monthly" "seasonal"; do
+    var_name="$type"
+    if [ "${!var_name}" = true ]; then
+      url="${url_data_prob}/${type}/data/"
+      saved_path="${path_data_prob}/access-s_files_global_${type}_data.html"
+      
+      echo "Processing $type..."
+      sleep 1
+
+      # storage[2]
+      crews_saved_content="$(cat -s $saved_path)"
+       # array[1]
+      # Climate Products = ['saved', 'url', 'url_name']
+      crews_content=("$crews_saved_content" "$url" "$saved_path")
+      
+      # Check for internet Connections
+      # request[1]
+      if curl -s --head "$url" | grep "200 OK" > /dev/null; then
+        echo "Connection: Successful"
+        format_and_display "${crews_content[@]}"
+      else
+        echo "Connection: Failed"
+        echo "Check Internet Connection! : Connection may be slow"
+       fi 
     fi
-done
+  done      
+fi
+
