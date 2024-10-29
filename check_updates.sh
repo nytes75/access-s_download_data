@@ -40,7 +40,7 @@ export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
 export testing_crews="./ACCESS-S_testing/index/updated_pages/png_crews"
 
 # local[2]: Testing 
-testing_mode=true
+testing_mode=false
 
 # A regular expression pattern to match the date and time within <td> tags
 date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
