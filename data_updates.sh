@@ -30,6 +30,7 @@ anom=false
 ## URL | Links 
 export url_data_prob="http://access-s.clide.cloud/files/global"
 export path_data_prob="./ACCESS-S/index/updated_pages/data/probability"
+export download_path="./ACCESS-S/data/probability/monthly"
 
 # local[2]: Testing 
 testing_mode=false
@@ -89,12 +90,7 @@ download_wget() {
   # ChatGPT generated
   local link="$1"  # The base URL is the first argument
   local time_pattern="^[0-9]{2}:[0-9]{2}$"  # Pattern for filtering out times
-
-  # Flags to determine which file type to download
-  local terciles=true
-  local anom=false
-  local median=false
-
+  
   # Set the desired file type based on the flags
   local file_keyword=""
   if $terciles; then
@@ -126,7 +122,7 @@ download_wget() {
     local date="${formatted_url[$i]}"
 
     # Check if the file matches the specified forecast type
-    if [[ "$file" == *rain.forecast.$file_keyword.monthly.nc ]]; then
+    if [[ "$file" == *rain.forecast.$file_keyword.* ]]; then
       # Remove dashes from date for the new filename
       local formatted_date="${date//-/}"
 
