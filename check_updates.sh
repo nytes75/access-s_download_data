@@ -41,8 +41,18 @@ export testing_crews="./ACCESS-S_testing/index/updated_pages/png_crews"
 
 # local[2]: Testing 
 testing_mode=false
+# ==================================
+# =======[ SYSTEM ]=================
+# Color variables
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+# Usage example
+# echo -e "${RED}This is red text${NC}"
 
-# A regular expression pattern to match the date and time within <td> tags
+# A regular expression pattern 
 date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
 
 filter_html() {
@@ -145,7 +155,7 @@ format_and_display() {
     
         if [ "$date1 $time1" != "$date2 $time2" ]; then
             modified=$((modified+1))
-            echo "$date1 $time1 | $date2 $time2 |: Modified :| $label"
+            echo -e "$date1 $time1 | $date2 $time2 ${YELLOW}|: Modified :|${NC} $label"
         else 
             constant=$((constant+1))
             echo "$date1 $time1 | $date2 $time2 || Constant || $label"
@@ -242,7 +252,7 @@ else
       # Check for internet Connections
       # request[1]
       if curl -s --head "$url" | grep "200 OK" > /dev/null; then
-        echo "Connection: Successful"
+        echo -e "${GREEN}Connection: Successful${NC}"
         format_and_display "${crews_content[@]}"
       else
         echo "Connection: Failed"
