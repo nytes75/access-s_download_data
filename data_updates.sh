@@ -87,7 +87,14 @@ format_dates_and_store() {
 }
 
 download_wget() {
-  # ChatGPT generated
+  
+  #================================
+  # Personaly I think this Function still needs work
+  # Future updates, maybe
+  # + Proper array or storing and indexing of data.
+  # + Simple dry code
+  #--------------------------------
+
   local link="$1"  # The base URL is the first argument
   local time_pattern="^[0-9]{2}:[0-9]{2}$"  # Pattern for filtering out times
   
@@ -100,46 +107,65 @@ download_wget() {
   elif $median; then
     file_keyword="median"
   fi
+  
+  while true; do
+    read -p "Do you wish to continue download forecast data? [Y/n]" choice
+    case "$choice" in
+      [Yy])
+        echo "[>>] downloading ACCESS-S forecast data"
+        # Separate remaining arguments into label and date arrays, filtering out time entries
+        shift 1  # Skip the base URL
+        local label_url=()
+        local formatted_url=()
 
-  # Separate remaining arguments into label and date arrays, filtering out time entries
-  shift 1  # Skip the base URL
-  local label_url=()
-  local formatted_url=()
+        for arg in "$@"; do
+          if [[ ! "$arg" =~ $time_pattern ]]; then
+            if [[ "$arg" == *.nc ]]; then
+              label_url+=("$arg")
+            else
+              formatted_url+=("$arg")
+            fi
+          fi
+        done
 
-  for arg in "$@"; do
-    if [[ ! "$arg" =~ $time_pattern ]]; then
-      if [[ "$arg" == *.nc ]]; then
-        label_url+=("$arg")
-      else
-        formatted_url+=("$arg")
-      fi
-    fi
-  done
+        # Loop through files and dates by index
+        for ((i=0; i<${#label_url[@]}; i++)); do
+          local file="${label_url[$i]}"
+          local date="${formatted_url[$i]}"
 
-  # Loop through files and dates by index
-  for ((i=0; i<${#label_url[@]}; i++)); do
-    local file="${label_url[$i]}"
-    local date="${formatted_url[$i]}"
+          # Check if the file matches the specified forecast type
+          # [!] Try another way to handle this...
+          if [[ "$file" == *rain.forecast.$file_keyword.* ]]; then
+            # Remove dashes from date for the new filename
+            local formatted_date="${date//-/}"
 
-    # Check if the file matches the specified forecast type
-    if [[ "$file" == *rain.forecast.$file_keyword.* ]]; then
-      # Remove dashes from date for the new filename
-      local formatted_date="${date//-/}"
+            # Construct the download URL and new filename
+            local download_url="${link}${file}"
+            local new_filename="${file%.nc}_${formatted_date}.nc"
 
-      # Construct the download URL and new filename
-      local download_url="${link}${file}"
-      local new_filename="${file%.nc}_${formatted_date}.nc"
-
-      # Print formatted output for tracking
-      echo "Downloading: $file | Date: $date"
-
-      # Download the file and rename it
-      wget -O "$new_filename" "$download_url"
+            # Print formatted output for tracking
+            echo "Downloading: $file | Date: $date"  
+            # Download the file and rename it
+            wget -O "$new_filename" "$download_url"
       
-      # Stop after downloading the specified file
-      break
-    fi
+            # Stop after downloading the specified file
+            break
+          fi
+        done       
+        break
+        ;;
+      [Nn])
+        
+        break
+        ;;
+      *)
+        echo "Invalid key. Please press Y if you wish to continue with the update or n to exit."
+        break 
+        ;;
+    esac
   done
+
+
 }
 
 format_and_display() {
@@ -203,7 +229,8 @@ format_and_display() {
       echo  
       echo "[!] Files have yet to be modified online"
       echo   
-          
+      download_wget $2 ${label_url[@]} ${formatted_url[@]}  
+    
     elif [ $modified/$constant = 1 ]; then
         echo "|| All flies have been Modified ||"
         sleep 0.3
@@ -222,15 +249,10 @@ format_and_display() {
               sleep 0.8
               echo "Updating Product"
               sleep 0.8
-              echo 
-        
-        #======================#
-        #======[DOWNLOAD]======#
-        #======================#
+              echo  
+              echo $html_url > "$3"  # Saving/Updating the last saved webpage to lastest 
+                #======[DOWNLOAD]======#
               download_wget $2 ${label_url[@]} ${formatted_url[@]}
-              echo
-              # Saving/Updating the last saved webpage to lastest
-              echo $html_url > "$3" 
               sleep 1
               echo "-|| Files Updated ||-"
               echo
