@@ -15,32 +15,27 @@
 
 # local[1]: 
 multiday=false
-weekly=false 
-fortnightly=false 
+weekly=true
+fortnightly=false
 monthly=true
-seasonal=false 
-sp_monthly=false 
+seasonal=false
+sp_monthly=false
 
 # local[1.5]
-terciles=true 
-median=false 
-anom=false 
+terciles=true
+median=false
+anom=false
 
 # storage[1]
-## url / links
-export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
-export url_semdp="http://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
-export path_crews="./ACCESS-S/index/updated_pages/png_crews"
-export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
-
-# Data download: 
+## URL | Links 
 export url_data_prob="http://access-s.clide.cloud/files/global"
 export path_data_prob="./ACCESS-S/index/updated_pages/data/probability"
+
 # local[2]: Testing 
 testing_mode=false
 
 # A regular expression pattern to match the date and time within <td> tags
-date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30 "
+date_pattern="([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} )" # dateFormat "2023-10-04 10:30"
 
 filter_html() {
   # Commenting Line Below For Reference
@@ -54,8 +49,7 @@ get_names() {
     other_info_pattern="<td><a (.*?)>(.*?)</a></td>"
     # saved_webpage1_content <- 
     IFS=$'\n' read -r -d '' -a array <<< "$(echo "$input_array" | sed -E 's/[[:space:]]*~[[:space:]]*│[[:space:]]*//g' | grep -Po '<a[^>]*>\K(.*?)(?=<\/a>)')"
-
-    # Initialize an empty array to store filtered items
+    
     filtered_array=()
     # Loop through the original array and filter items
     for item in "${array[@]}"; do
@@ -91,6 +85,67 @@ format_dates_and_store() {
     echo "${output_array[@]}"
 }
 
+download_wget() {
+  # ChatGPT generated
+  local link="$1"  # The base URL is the first argument
+  local time_pattern="^[0-9]{2}:[0-9]{2}$"  # Pattern for filtering out times
+
+  # Flags to determine which file type to download
+  local terciles=true
+  local anom=false
+  local median=false
+
+  # Set the desired file type based on the flags
+  local file_keyword=""
+  if $terciles; then
+    file_keyword="terciles"
+  elif $anom; then
+    file_keyword="anom"
+  elif $median; then
+    file_keyword="median"
+  fi
+
+  # Separate remaining arguments into label and date arrays, filtering out time entries
+  shift 1  # Skip the base URL
+  local label_url=()
+  local formatted_url=()
+
+  for arg in "$@"; do
+    if [[ ! "$arg" =~ $time_pattern ]]; then
+      if [[ "$arg" == *.nc ]]; then
+        label_url+=("$arg")
+      else
+        formatted_url+=("$arg")
+      fi
+    fi
+  done
+
+  # Loop through files and dates by index
+  for ((i=0; i<${#label_url[@]}; i++)); do
+    local file="${label_url[$i]}"
+    local date="${formatted_url[$i]}"
+
+    # Check if the file matches the specified forecast type
+    if [[ "$file" == *rain.forecast.$file_keyword.monthly.nc ]]; then
+      # Remove dashes from date for the new filename
+      local formatted_date="${date//-/}"
+
+      # Construct the download URL and new filename
+      local download_url="${link}${file}"
+      local new_filename="${file%.nc}_${formatted_date}.nc"
+
+      # Print formatted output for tracking
+      echo "Downloading: $file | Date: $date"
+
+      # Download the file and rename it
+      wget -O "$new_filename" "$download_url"
+      
+      # Stop after downloading the specified file
+      break
+    fi
+  done
+}
+
 format_and_display() {
     modified=0
     constant=0 
@@ -117,10 +172,7 @@ format_and_display() {
       formatted_saved=($(format_dates_and_store "${filter_html_saved[@]}"))
       formatted_url=($(format_dates_and_store "${filter_html_url[@]}")) 
       label_url=($(get_names "${html_url}"))
-    fi
-
-    #echo "${filter_html_url}" 
-    
+    fi 
     #echo "${formatted_saved[@]}"
     #echo "||"
     #echo "${formatted_url[@]}"
@@ -153,17 +205,21 @@ format_and_display() {
 
     if [ $modified = 0 ]; then
       echo  
-      echo "-> Files have yet to be modified online:"
+      echo "[!] Files have yet to be modified online"
+      echo   
+          
     elif [ $modified/$constant = 1 ]; then
-        echo "-> All flies have been Modified"
+        echo "|| All flies have been Modified ||"
         sleep 0.3
-        echo "> Do you wish to continue with update [Y/n]"
+        echo "[!] Do you wish to continue with update [Y/n]"
+
     else
-        echo "we have $modified modified and $constant constant"
+        echo "[>] We have $modified modified and $constant constant"
         sleep 1
         echo
         while true; do
-          read -p "Do you wish to continue with the Update [Y/n]: " choice
+          read -p "[!] Do you wish to continue with the Update [Y/n]: " choice
+          
           case "$choice" in
             [Yy])
               echo "Continuing..."
@@ -171,6 +227,12 @@ format_and_display() {
               echo "Updating Product"
               sleep 0.8
               echo 
+        
+        #======================#
+        #======[DOWNLOAD]======#
+        #======================#
+              download_wget $2 ${label_url[@]} ${formatted_url[@]}
+              echo
               # Saving/Updating the last saved webpage to lastest
               echo $html_url > "$3" 
               sleep 1
@@ -180,7 +242,8 @@ format_and_display() {
               break
               ;;
             [Nn])
-              echo "Exiting..."
+              echo
+              echo "Exiting.. NO UPDATES DONE"
               # Add your code here to handle the exit or anything else you want to do
               break
               ;;
@@ -227,13 +290,13 @@ else
     if [ "${!var_name}" = true ]; then
       url="${url_data_prob}/${type}/data/"
       saved_path="${path_data_prob}/access-s_files_global_${type}_data.html"
-      
+      echo "===================================" 
       echo "Processing $type..."
+      echo "==================================="
       sleep 1
-
       # storage[2]
       crews_saved_content="$(cat -s $saved_path)"
-       # array[1]
+      # array[1]
       # Climate Products = ['saved', 'url', 'url_name']
       crews_content=("$crews_saved_content" "$url" "$saved_path")
       
@@ -241,11 +304,12 @@ else
       # request[1]
       if curl -s --head "$url" | grep "200 OK" > /dev/null; then
         echo "Connection: Successful"
+        echo
         format_and_display "${crews_content[@]}"
       else
         echo "Connection: Failed"
         echo "Check Internet Connection! : Connection may be slow"
-       fi 
+      fi 
     fi
   done      
 fi
