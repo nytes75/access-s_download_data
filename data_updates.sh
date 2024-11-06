@@ -104,7 +104,8 @@ download_wget() {
   # + Proper array or storing and indexing of data.
   # + Simple dry code
   #--------------------------------
-
+  # || FILE PATH READ ||
+  #--------------------------------
   local link="$1"  # The base URL is the first argument
   local time_pattern="^[0-9]{2}:[0-9]{2}$"  # Pattern for filtering out times
   
