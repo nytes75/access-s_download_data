@@ -28,7 +28,7 @@ anom=false
 
 # storage[1]
 ## URL | Links 
-export url_data_prob="http://access-s.clide.cloud/files/global"
+export url_data_prob="https://access-s.clide.cloud/files/global"
 export path_data_prob="./ACCESS-S/index/updated_pages/data/probability"
 export download_path="./ACCESS-S/data/probability/monthly"
 
@@ -331,7 +331,8 @@ else
       
       # Check for internet Connections
       # request[1]
-      if curl -s --head "$url" | grep "200 OK" > /dev/null; then
+      echo "$url"
+      if curl -s --head "$url" | grep "200" > /dev/null; then
         echo -e "${GREEN}Connection: Successful${NC}"
         echo
         format_and_display "${crews_content[@]}"

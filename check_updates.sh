@@ -31,8 +31,8 @@ sp_monthly=true
 
 # storage[1]
 ## url / links
-export url_crews="http://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
-export url_semdp="http://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
+export url_crews="https://access-s.clide.cloud/files/project/PNG_crews/ACCESS_S-outlooks/PNG_crews"
+export url_semdp="https://access-s.clide.cloud/files/project/PNG_crews/SEMDP-products/"
 export path_crews="./ACCESS-S/index/updated_pages/png_crews"
 export path_semdp="./ACCESS-S/index/updated_pages/SEMDP-products"
 
@@ -251,7 +251,7 @@ else
       
       # Check for internet Connections
       # request[1]
-      if curl -s --head "$url" | grep "200 OK" > /dev/null; then
+      if curl -s --head "$url" | grep "200" > /dev/null; then
         echo -e "${GREEN}Connection: Successful${NC}"
         format_and_display "${crews_content[@]}"
       else
