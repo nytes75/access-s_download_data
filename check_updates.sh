@@ -155,7 +155,7 @@ format_and_display() {
     
         if [ "$date1 $time1" != "$date2 $time2" ]; then
             modified=$((modified+1))
-            echo -e "$date1 $time1 | $date2 $time2 ${YELLOW}|: Modified :|${NC} $label"
+            echo -e "$date1 $time1 | $date2 $time2 |:${YELLOW} Modified ${NC}:| $label"
         else 
             constant=$((constant+1))
             echo "$date1 $time1 | $date2 $time2 || Constant || $label"
