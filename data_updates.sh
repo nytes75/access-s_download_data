@@ -13,6 +13,11 @@
 # \__,_/\____/|__/|__/_/ /_/_/\____/\__,_/\__,_/
 # Checking new updates added to the ACCESS-S cloud files.
 
+# TESTING MODE 
+testing_mode=false
+
+# ===================================
+# ===========[ CONFIG ]==============
 # local[1]: 
 multiday=false
 weekly=true
@@ -30,10 +35,8 @@ anom=false
 ## URL | Links 
 export url_data_prob="https://access-s.clide.cloud/files/global"
 export path_data_prob="./ACCESS-S/index/updated_pages/data/probability"
-export download_path="./ACCESS-S/data/probability/monthly"
+export download_path="~/Codes/lib/data/access-s/"
 
-# local[2]: Testing 
-testing_mode=false
 # ==================================
 # =======[ SYSTEM ]=================
 # Color variables
