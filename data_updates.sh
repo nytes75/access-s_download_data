@@ -74,7 +74,7 @@ get_names() {
             filtered_array+=("$item")
             ;;
         *)
-            # Ignore items with other extensions
+          
             ;;
       esac
     done
